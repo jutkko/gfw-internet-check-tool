@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,9 +11,9 @@ import (
 )
 
 const testFile = "video.mp4"
-const testTime = 30
-const videoSize = 0.43
-const videoURL = "https://www.youtube.com/watch?v=zOWJqNPeifU" // Worst quality 0.43MB
+const testTime = 5
+const videoSize = 0.28
+const videoURL = "https://www.youtube.com/watch?v=NQ9RtLrapzc"
 
 func main() {
 	for {
@@ -27,27 +26,22 @@ func main() {
 	}
 }
 
-func needForSpeed(size, timeSeconds float64) int {
-	return (int)(size * 1024 / timeSeconds)
+func needForSpeed(sizeMB, timeSeconds float64) int {
+	return (int)(sizeMB * 1024 / timeSeconds)
 }
 
 func run(dir string) {
 	cmd := exec.Command("youtube-dl",
 		"-r",
-		strconv.Itoa(needForSpeed(videoSize, testTime)) + "K",
+		strconv.Itoa(needForSpeed(videoSize, testTime))+"K",
 		"--socket-timeout",
 		"3",
 		"-o",
-		dir + "/" + testFile,
+		dir+"/"+testFile,
 		"-f",
 		"worst[ext=mp4]",
 		videoURL,
 	)
-
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
-		log.Fatal(errors.New(fmt.Sprintf("failed to get pipe %s", err)))
-	}
 
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -58,27 +52,15 @@ func run(dir string) {
 		log.Fatal(err)
 	}
 
-	outputBuffer := make([]byte, 100)
-	for {
-		n, err := stdout.Read(outputBuffer)
-		if err != nil {
-			if err == io.EOF {
-				fmt.Println(string(outputBuffer[:n]))
-				break
-			}
-		}
-		fmt.Printf("%s", string(outputBuffer[:n]))
-	}
-
 	if stdErr, err := ioutil.ReadAll(stderr); err != nil {
 		log.Fatal(err)
-	} else {
+	} else if len(stdErr) != 0 {
 		fmt.Printf("%s\n", stdErr)
 	}
 
 	if err := cmd.Wait(); err != nil {
-		fmt.Printf("Scientific browsing not good, download failed, retrying\n")
+		log.Printf("Scientific browsing not good, download failed, retrying")
 	} else {
-		fmt.Printf("Scientific browsing still good, true internet")
+		log.Printf("Scientific browsing still good, true internet")
 	}
 }
