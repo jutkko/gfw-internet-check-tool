@@ -20,6 +20,7 @@ const testTime = 5
 const videoSize = 0.094
 const youtubeAPI = "http://youtube.com/get_video_info?video_id="
 const videoID = "NQ9RtLrapzc"
+const timeout = 5
 
 func main() {
 	for {
@@ -53,7 +54,7 @@ func run(dir string) {
 		"--tries",
 		"0",
 		"--timeout",
-		"3",
+		strconv.Itoa(timeout),
 		"-O",
 		dir+"/"+testFile,
 		url,
@@ -86,14 +87,18 @@ func needForSpeed(sizeMB, timeSeconds float64) int {
 }
 
 func getVideoInfo() (string, error) {
+	client := http.Client{
+		Timeout: timeout * time.Second,
+	}
+
 	url := youtubeAPI + videoID
-	resp, err := http.Get(url)
+	resp, err := client.Get(url)
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return "", err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
@@ -152,8 +157,6 @@ func getDownloadURLFromVideoInfo(videoInfo string) (string, error) {
 			}
 
 			stream = map[string]string{
-				"quality": streamQry["quality"][0],
-				"type":    streamQry["type"][0],
 				"url":     streamQry["url"][0],
 				"sig":     sig,
 			}
