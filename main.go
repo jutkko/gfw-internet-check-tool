@@ -15,7 +15,7 @@ import (
 )
 
 const debug = false
-const testFile = "video.mp4"
+const tempFile = "video.mp4"
 const testTime = 5
 const videoSize = 0.094
 const youtubeAPI = "http://youtube.com/get_video_info?video_id="
@@ -24,19 +24,20 @@ const timeout = 5
 
 func main() {
 	for {
-		tempDir, err := ioutil.TempDir("", "gfe-internet-check-tool")
-		if err != nil {
-			log.Fatal(errors.New(fmt.Sprintf("failed to get working directory %s", err)))
-		}
-
-		run(tempDir)
-		os.RemoveAll(tempDir)
+		run()
 
 		<-time.After(1 * time.Second)
 	}
 }
 
-func run(dir string) {
+func run() {
+	dir, err := ioutil.TempDir("", "gfe-internet-check-tool")
+	if err != nil {
+		log.Fatal(errors.New(fmt.Sprintf("failed to get working directory %s", err)))
+	}
+
+	defer os.RemoveAll(dir)
+
 	info, err := getVideoInfo()
 	if err != nil {
 		log.Printf("scientific browsing not good, download failed %s, retrying", err.Error())
@@ -56,7 +57,7 @@ func run(dir string) {
 		"--timeout",
 		strconv.Itoa(timeout),
 		"-O",
-		dir+"/"+testFile,
+		dir+"/"+tempFile,
 		url,
 	)
 
@@ -91,8 +92,7 @@ func getVideoInfo() (string, error) {
 		Timeout: timeout * time.Second,
 	}
 
-	url := youtubeAPI + videoID
-	resp, err := client.Get(url)
+	resp, err := client.Get(youtubeAPI + videoID)
 	if err != nil {
 		return "", err
 	}
@@ -101,8 +101,8 @@ func getVideoInfo() (string, error) {
 	if resp.StatusCode != http.StatusOK {
 		return "", err
 	}
-	body, err := ioutil.ReadAll(resp.Body)
 
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
@@ -151,14 +151,8 @@ func getDownloadURLFromVideoInfo(videoInfo string) (string, error) {
 	for streamPos, streamRaw := range streamsList {
 		streamQry, err := url.ParseQuery(streamRaw)
 		if err == nil {
-			var sig string
-			if _, exist := streamQry["sig"]; exist {
-				sig = streamQry["sig"][0]
-			}
-
 			stream = map[string]string{
-				"url":     streamQry["url"][0],
-				"sig":     sig,
+				"url": streamQry["url"][0],
 			}
 			break
 		}
@@ -172,11 +166,9 @@ func getDownloadURLFromVideoInfo(videoInfo string) (string, error) {
 		return "", err
 	}
 
-	signature, ok := stream["sig"]
-	if !ok {
-		err = fmt.Errorf("no signature found in the stream")
-		return "", err
+	if debug {
+		log.Printf("download URL %s", url)
 	}
 
-	return url + "&signature=" + signature, nil
+	return url, nil
 }
