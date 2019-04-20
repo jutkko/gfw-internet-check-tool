@@ -22,15 +22,20 @@ const youtubeAPI = "http://youtube.com/get_video_info?video_id="
 const videoID = "NQ9RtLrapzc"
 const timeout = 5
 
+
 func main() {
+	client := &http.Client{
+		Timeout: timeout * time.Second,
+	}
+
 	for {
-		run()
+		run(client)
 
 		<-time.After(1 * time.Second)
 	}
 }
 
-func run() {
+func run(client *http.Client) {
 	dir, err := ioutil.TempDir("", "gfe-internet-check-tool")
 	if err != nil {
 		log.Fatal(errors.New(fmt.Sprintf("failed to get working directory %s", err)))
@@ -38,7 +43,7 @@ func run() {
 
 	defer os.RemoveAll(dir)
 
-	info, err := getVideoInfo()
+	info, err := getVideoInfo(client)
 	if err != nil {
 		log.Printf("scientific browsing not good, download failed %s, retrying", err.Error())
 		return
@@ -87,11 +92,7 @@ func needForSpeed(sizeMB, timeSeconds float64) int {
 	return (int)(sizeMB * 1024 / timeSeconds)
 }
 
-func getVideoInfo() (string, error) {
-	client := http.Client{
-		Timeout: timeout * time.Second,
-	}
-
+func getVideoInfo(client *http.Client) (string, error) {
 	resp, err := client.Get(youtubeAPI + videoID)
 	if err != nil {
 		return "", err
