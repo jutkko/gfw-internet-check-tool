@@ -10,8 +10,9 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 	"time"
+
+	"github.com/tidwall/gjson"
 )
 
 const debug = false
@@ -21,7 +22,6 @@ const videoSize = 0.094
 const youtubeAPI = "http://youtube.com/get_video_info?video_id="
 const videoID = "NQ9RtLrapzc"
 const timeout = 5
-
 
 func main() {
 	client := &http.Client{
@@ -45,13 +45,13 @@ func run(client *http.Client) {
 
 	info, err := getVideoInfo(client)
 	if err != nil {
-		log.Printf("scientific browsing not good, download failed %s, retrying", err.Error())
+		log.Printf("scientific browsing not good, download failed get video info %s, retrying", err.Error())
 		return
 	}
 
 	url, err := getDownloadURLFromVideoInfo(info)
 	if err != nil {
-		log.Printf("scientific browsing not good, download failed %s, retrying", err.Error())
+		log.Printf("scientific browsing not good, download failed get video url %s, retrying", err.Error())
 	}
 
 	cmd := exec.Command("wget",
@@ -82,7 +82,7 @@ func run(client *http.Client) {
 	}
 
 	if err := cmd.Wait(); err != nil {
-		log.Printf("scientific browsing not good, download failed %s, retrying", err.Error())
+		log.Printf("scientific browsing not good, download failed wget %s, retrying", err.Error())
 	} else {
 		log.Printf("scientific browsing still good, true internet")
 	}
@@ -138,38 +138,19 @@ func getDownloadURLFromVideoInfo(videoInfo string) (string, error) {
 	}
 
 	// read the streams map
-	streamMap, ok := answer["url_encoded_fmt_stream_map"]
+	playerResponse, ok := answer["player_response"]
 	if !ok {
 		err = errors.New(fmt.Sprint("no stream map found in the server's answer"))
 		return "", err
 	}
 
-	// read each stream
-	streamsList := strings.Split(streamMap[0], ",")
-	stream := map[string]string{}
+	streamingURL := gjson.Get(playerResponse[0], "streamingData.formats.#(url).url")
 
-	// take the first stream and break
-	for streamPos, streamRaw := range streamsList {
-		streamQry, err := url.ParseQuery(streamRaw)
-		if err == nil {
-			stream = map[string]string{
-				"url": streamQry["url"][0],
-			}
-			break
-		}
-
-		log.Printf("an error occured while decoding one of the video's stream's information: stream %d: %s", streamPos, err)
-	}
-
-	url, ok := stream["url"]
-	if !ok {
+	url, err := url.Parse(streamingURL.String())
+	if err != nil {
 		err = fmt.Errorf("no url found in the stream")
 		return "", err
 	}
 
-	if debug {
-		log.Printf("download URL %s", url)
-	}
-
-	return url, nil
+	return url.String(), nil
 }
