@@ -20,7 +20,7 @@ func main() {
 	}
 
 	for {
-		ctx, _ := context.WithTimeout(context.Background(), timeout*time.Second)
+		ctx, _ := context.WithTimeout(context.Background(), time.Minute)
 		err := dl.Download(ctx, video, &video.Formats[0], tempFile)
 		if err == nil {
 			log.Printf("scientific browsing still good, true internet")
