@@ -1,0 +1,33 @@
+# github.com/VividCortex/ewma v1.2.0
+github.com/VividCortex/ewma
+# github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d
+github.com/acarl005/stripansi
+# github.com/bitly/go-simplejson v0.5.0
+github.com/bitly/go-simplejson
+# github.com/kkdai/youtube/v2 v2.7.4
+## explicit
+github.com/kkdai/youtube/v2
+github.com/kkdai/youtube/v2/downloader
+# github.com/mattn/go-runewidth v0.0.13
+github.com/mattn/go-runewidth
+# github.com/rivo/uniseg v0.2.0
+github.com/rivo/uniseg
+# github.com/tidwall/gjson v1.6.8
+## explicit
+github.com/tidwall/gjson
+# github.com/tidwall/match v1.0.3
+github.com/tidwall/match
+# github.com/tidwall/pretty v1.0.2
+github.com/tidwall/pretty
+# github.com/vbauerster/mpb/v5 v5.4.0
+github.com/vbauerster/mpb/v5
+github.com/vbauerster/mpb/v5/cwriter
+github.com/vbauerster/mpb/v5/decor
+github.com/vbauerster/mpb/v5/internal
+# golang.org/x/net v0.0.0-20210614182718-04defd469f4e
+golang.org/x/net/html
+golang.org/x/net/html/atom
+# golang.org/x/sys v0.0.0-20210616094352-59db8d763f22
+golang.org/x/sys/internal/unsafeheader
+golang.org/x/sys/unix
+golang.org/x/sys/windows
