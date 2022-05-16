@@ -12,13 +12,6 @@ github.com/kkdai/youtube/v2/downloader
 github.com/mattn/go-runewidth
 # github.com/rivo/uniseg v0.2.0
 github.com/rivo/uniseg
-# github.com/tidwall/gjson v1.6.8
-## explicit
-github.com/tidwall/gjson
-# github.com/tidwall/match v1.0.3
-github.com/tidwall/match
-# github.com/tidwall/pretty v1.0.2
-github.com/tidwall/pretty
 # github.com/vbauerster/mpb/v5 v5.4.0
 github.com/vbauerster/mpb/v5
 github.com/vbauerster/mpb/v5/cwriter
